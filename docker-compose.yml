@@ -5,7 +5,6 @@ influxdbData:
 
 influxdb:
   image: tutum/influxdb:0.9
-  restart: always
   environment:
     - PRE_CREATE_DB=cadvisor
   ports:
@@ -18,11 +17,10 @@ influxdb:
     - "influxdbData"
 
 cadvisor:
-  image: google/cadvisor:v0.20.5
+  image: google/cadvisor:latest
   links:
     - influxdb:influxsrv
   command: -storage_driver=influxdb -storage_driver_db=cadvisor -storage_driver_host=influxsrv:8086
-  restart: always
   ports:
     - "8080:8080"
   volumes:
@@ -32,8 +30,7 @@ cadvisor:
     - /var/lib/docker/:/var/lib/docker:ro
 
 grafana:
-  image: grafana/grafana:2.6.0
-  restart: always
+  image: grafana/grafana:3.0.3
   links:
     - influxdb:influxsrv
   ports:
