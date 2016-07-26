@@ -6,7 +6,7 @@ influxdbData:
 influxdb:
   image: tutum/influxdb:0.9
   environment:
-    - PRE_CREATE_DB=cadvisor
+    - PRE_CREATE_DB=telegraf
   ports:
     - "8083:8083"
     - "8086:8086"
@@ -16,18 +16,19 @@ influxdb:
   volumes_from:
     - "influxdbData"
 
-cadvisor:
-  image: google/cadvisor:latest
+telegraf:
+  build: ./docker-monitoring/telegraf/1.0
+  dockerfile: Dockerfile
   links:
     - influxdb:influxsrv
-  command: -storage_driver=influxdb -storage_driver_db=cadvisor -storage_driver_host=influxsrv:8086
-  ports:
-    - "8080:8080"
   volumes:
     - /:/rootfs:ro
     - /var/run:/var/run:rw
     - /sys:/sys:ro
     - /var/lib/docker/:/var/lib/docker:ro
+  ports:
+    - "8094:8094"
+  command: -config telegraf.conf -input-filter cpu:mem -output-filter influxdb
 
 grafana:
   image: grafana/grafana:3.0.3
@@ -40,6 +41,6 @@ grafana:
     - HTTP_PASS=admin
     - INFLUXDB_HOST=influxsrv
     - INFLUXDB_PORT=8086
-    - INFLUXDB_NAME=cadvisor
+    - INFLUXDB_NAME=telegraf
     - INFLUXDB_USER=root
     - INFLUXDB_PASS=root
